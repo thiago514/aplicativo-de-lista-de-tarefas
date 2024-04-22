@@ -24,7 +24,6 @@ fun InitalScreen() {
     val viewModel: ListaDeTarefasViewModel = viewModel()
     val navController = rememberNavController()
     val uiState by viewModel.initialScreenUiState.collectAsState()
-    ListaDeTarefas(viewModel = viewModel, navController = navController)
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(text = uiState.title) })
