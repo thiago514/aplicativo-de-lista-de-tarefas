@@ -10,6 +10,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -17,19 +18,26 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.lista_de_tarefas.viewmodel.ListaDeTarefasViewModel
+import com.example.lista_de_tarefas.viewmodel.ViewModelProvider
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InitalScreen() {
-    val viewModel: ListaDeTarefasViewModel = viewModel()
+    val viewModel: ListaDeTarefasViewModel = viewModel(factory = ViewModelProvider.Factory)
     val navController = rememberNavController()
     val uiState by viewModel.initialScreenUiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(text = uiState.title) })
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.fabAction(navController) }) {
+            FloatingActionButton(onClick = { coroutineScope.launch {
+                viewModel.fabAction(navController)
+            }
+            }) {
                 Image(painter = painterResource(id = uiState.icon), contentDescription = uiState.iconContentDescription)
             }
         }

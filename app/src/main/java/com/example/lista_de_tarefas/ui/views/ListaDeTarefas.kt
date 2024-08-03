@@ -33,7 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.lista_de_tarefas.models.Tarefa
+import com.example.lista_de_tarefas.data.Tarefa
 import com.example.lista_de_tarefas.viewmodel.ListaDeTarefasViewModel
 import kotlin.reflect.KFunction1
 
