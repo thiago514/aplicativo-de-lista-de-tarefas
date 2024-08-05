@@ -74,21 +74,14 @@ class ListaDeTarefasViewModel(
             navCotroller.navigate(InitialScreenAction.INSERT_TAREFA.name)
         } else {
             if (editTarefa) {
-                val tarefas = listaDeTarefasUiState.value.tarefas.toMutableList()
-                val pos = tarefas.indexOf(tarefaToEdit)
-                tarefas.remove(tarefaToEdit)
-                tarefas.add(
-                    pos, tarefaToEdit.copy(
+                tarefasRepository.updateTarefa(
+                    Tarefa(
+                        id = tarefaToEdit.id,
                         titulo = _insertTarefaUiState.value.titulo,
                         descricao = _insertTarefaUiState.value.descricao,
                         concluida = _insertTarefaUiState.value.concluida
                     )
                 )
-//                _listaDeTarefasUiState.update {
-//                    it.copy(
-//                        tarefas = tarefas.toList()
-//                    )
-//                }
                 editTarefa = false
                 tarefaToEdit = Tarefa(0,"", "", false)
             } else {
@@ -99,15 +92,6 @@ class ListaDeTarefasViewModel(
                         concluida = _insertTarefaUiState.value.concluida
                     )
                 )
-//                _listaDeTarefasUiState.update {
-//                    it.copy(
-//                        tarefas = it.tarefas + Tarefa(
-//                            _insertTarefaUiState.value.titulo,
-//                            _insertTarefaUiState.value.descricao,
-//                            _insertTarefaUiState.value.concluida
-//                        )
-//                    )
-//                }
             }
 
             _insertTarefaUiState.update {
@@ -163,30 +147,15 @@ class ListaDeTarefasViewModel(
 
     }
 
-    fun checkTarefa(tarefa: Tarefa) {
-//        val tarefas = _listaDeTarefasUiState.value.tarefas.toMutableList()
-//        val pos = tarefas.indexOf(tarefa)
-//        tarefas.remove(tarefa)
-//        tarefas.add(
-//            pos, tarefa.copy(
-//                concluida = !tarefa.concluida
-//            )
-//        )
-//        _listaDeTarefasUiState.update {
-//            it.copy(
-//                tarefas = tarefas.toList()
-//            )
-//        }
+    suspend fun checkTarefa(tarefa: Tarefa) {
+        val tarefaAtualizada = tarefa.copy(
+            concluida = !tarefa.concluida
+        )
+        tarefasRepository.updateTarefa(tarefaAtualizada)
     }
 
-    fun deleteTarefa(tarefa: Tarefa) {
-//        val tarefas = _listaDeTarefasUiState.value.tarefas.toMutableList()
-//        tarefas.remove(tarefa)
-//        _listaDeTarefasUiState.update {
-//            it.copy(
-//                tarefas = tarefas.toList()
-//            )
-//        }
+    suspend fun deleteTarefa(tarefa: Tarefa) {
+        tarefasRepository.deleteTarefa(tarefa)
     }
 
     fun updateTitulo(titulo: String) {

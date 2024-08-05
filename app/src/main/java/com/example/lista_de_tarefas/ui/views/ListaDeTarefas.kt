@@ -3,10 +3,12 @@ package com.example.lista_de_tarefas.ui.views
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -35,7 +38,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lista_de_tarefas.data.Tarefa
 import com.example.lista_de_tarefas.viewmodel.ListaDeTarefasViewModel
-import kotlin.reflect.KFunction1
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 @Composable
 fun ListaDeTarefas(
@@ -44,11 +48,16 @@ fun ListaDeTarefas(
     navController: NavController
 ) {
     val uiState by viewModel.listaDeTarefasUiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
     LazyColumn {
         items(uiState.tarefas) { tarefa ->
             TarefaCard(
                 tarefa = tarefa,
-                onDelete = viewModel::deleteTarefa,
+                onDelete = {
+                    coroutineScope.launch {
+                        viewModel.deleteTarefa(tarefa)
+                    }
+                },
                 modifier = modifier,
                 onEditTarefa = {
                     viewModel.updateTarefa(
@@ -57,7 +66,9 @@ fun ListaDeTarefas(
                     )
                 },
                 onConcluida = {
-                    viewModel.checkTarefa(tarefa)
+                    coroutineScope.launch {
+                        viewModel.checkTarefa(tarefa)
+                    }
                 })
         }
     }
@@ -66,85 +77,106 @@ fun ListaDeTarefas(
 @Composable
 fun TarefaCard(
     tarefa: Tarefa,
-    onDelete: KFunction1<Tarefa, Unit>,
+    onDelete: () -> Job,
     onEditTarefa: () -> Unit,
     onConcluida: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .padding(2.dp)
-            .fillMaxWidth()
-            .background(color = MaterialTheme.colorScheme.background)
+    Box(modifier = modifier) {
 
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(8.dp)
-        ) {
-            IconButton(
-                onClick = { onConcluida() }, modifier = modifier
-                    .border(1.dp, Color.Black)
-                    .padding(bottom = 7.dp)
+
+        Column(modifier = modifier) {
+            Row(
+                modifier = modifier
+                    .padding(2.dp)
+                    .fillMaxWidth()
+                    .background(color = MaterialTheme.colorScheme.background)
+
             ) {
-                if(tarefa.concluida){
-                    Icon(
-                        Icons.Filled.Check,
-                        contentDescription = "Delete",
-                        modifier = modifier.size(50.dp),
+                Column(
+                    modifier = Modifier
+                        .padding(8.dp)
+                ) {
+                    IconButton(
+                        onClick = { onConcluida() }, modifier = modifier
+                            .border(5.dp, Color.Black)
+                            .padding(bottom = 7.dp)
+                    ) {
+                        if (tarefa.concluida) {
+                            Icon(
+                                Icons.Filled.Check,
+                                contentDescription = "Delete",
+                                modifier = modifier.size(50.dp),
+                            )
+                        }
+
+                    }
+                }
+                Card(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .clickable {
+                            onEditTarefa()
+                        },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                    ),
+                ) {
+                    Text(
+                        text = tarefa.titulo,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        style = TextStyle(textDecoration = if (tarefa.concluida) TextDecoration.LineThrough else TextDecoration.None),
+                        modifier = Modifier.padding(1.dp)
+                    )
+                    Text(
+                        text = tarefa.descricao,
+                        fontSize = 16.sp,
+                        style = TextStyle(textDecoration = if (tarefa.concluida) TextDecoration.LineThrough else TextDecoration.None),
+                        fontStyle = FontStyle.Italic,
+                        modifier = Modifier.padding(1.dp)
+
                     )
                 }
-
+                Spacer(modifier = modifier.weight(1f))
+                IconButton(onClick = { onDelete() }, modifier = modifier.padding(10.dp)) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "Delete",
+                        modifier = modifier.size(30.dp),
+                    )
+                }
             }
-        }
-        Card(
-            modifier = Modifier
-                .padding(10.dp)
-                .clickable {
-                    onEditTarefa()
-                },
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.background,
-            ),
-        ) {
-            Text(
-                text = tarefa.titulo,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                style = TextStyle(textDecoration = if(tarefa.concluida) TextDecoration.LineThrough else TextDecoration.None),
-                modifier = Modifier.padding(1.dp)
-            )
-            Text(
-                text = tarefa.descricao,
-                fontSize = 16.sp,
-                style = TextStyle(textDecoration = if(tarefa.concluida) TextDecoration.LineThrough else TextDecoration.None),
-                fontStyle = FontStyle.Italic,
-                modifier = Modifier.padding(1.dp)
-
+            Spacer(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .border(6.dp, color = Color.Black)
+                    .height(5.dp)
             )
         }
-        Spacer(modifier = modifier.weight(1f))
-        IconButton(onClick = { onDelete(tarefa) }, modifier = modifier.padding(10.dp)) {
-            Icon(
-                Icons.Filled.Delete,
-                contentDescription = "Delete",
-                modifier = modifier.size(30.dp),
-            )
-        }
+        Box(modifier = modifier.background(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1F) ).matchParentSize())
     }
+
+
 }
 
 @Preview(showBackground = true)
 @Composable
 fun TarefaCardPreview() {
+    val tarefa = Tarefa(
+        titulo = "Titulo",
+        descricao = "Descrição",
+        concluida = false
+    )
+    val coroutineScope = rememberCoroutineScope()
     TarefaCard(
-        tarefa = Tarefa(
-            titulo = "Titulo",
-            descricao = "Descrição",
-            concluida = false
-        ),
+        tarefa = tarefa,
         onConcluida = {},
-        onDelete = ::deleteForPreview,
+        onDelete = {
+            coroutineScope.launch {
+                deleteForPreview(tarefa)
+            }
+        },
         onEditTarefa = {}
     )
 }

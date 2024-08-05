@@ -1,6 +1,8 @@
 package com.example.lista_de_tarefas.ui.theme
 
 import android.app.Activity
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -26,7 +28,7 @@ private val LightColorScheme = lightColorScheme(
     primary = Color(0xFF0F2C59),
     secondary = Color(0xFFDAC0A3),
     tertiary = Color(0xFFEADBC8),
-    background = Color(0xFFF8F0E5),
+    background = Color(0xFFFFE4BE),
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -39,6 +41,7 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ListadetarefasTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
